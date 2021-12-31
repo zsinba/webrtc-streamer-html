@@ -68,7 +68,8 @@ var XMPPVideoRoom = (function() {
 			connection.addHandler(this.OnJingle.bind(this, connection, roomId, username), 'urn:xmpp:jingle:1', 'iq', 'set', null, null);
 
 
-			var roomUrl = this.getRoomUrl(roomId);
+			let roomUrl = this.getRoomUrl(roomId);
+
 			this.emitState(roomId + '/' + username, "joining");
 
 			var extPresence = Strophe.xmlElement('nick', {xmlns:'http://jabber.org/protocol/nick'}, username);
@@ -276,7 +277,6 @@ var XMPPVideoRoom = (function() {
 	/*
 	/* XMPP callback for  jingle
 	*/
-	// XMPPVideoRoom.prototype.OnJingle = function(connection, roomid, name, url, iq) {
 	XMPPVideoRoom.prototype.OnJingle = function(connection, roomid, name, iq) {
 		let jingle = iq.querySelector("jingle");
 		let sid = jingle.getAttribute("sid");
@@ -284,13 +284,14 @@ var XMPPVideoRoom = (function() {
 
 
 		let action = jingle.getAttribute("action");
+		console.log("##########action=" + action);
 		const fromJid = iq.getAttribute('from');
 		const toJid = iq.getAttribute('to');
 		console.log("OnJingle from:" + fromJid + " to:" + toJid + " sid:" + sid + " action:" + action)
 		//console.log(iq.innerHTML);
 
-		var id = iq.getAttribute("id");
-		var ack = $iq({ type: "result", to: fromJid, id })
+		let id = iq.getAttribute("id");
+		let ack = $iq({ type: "result", to: fromJid, id })
 
 		if (action === "session-initiate") 	{
 			connection.sendIQ(ack);
@@ -300,36 +301,15 @@ var XMPPVideoRoom = (function() {
 			console.log("<=== xmpp offer sid:" + sid + " resource:" + resource + " initiator:" + jingle.getAttribute("initiator"));
 
 			if (!isP2P) {
+				console.log("############!isP2p")
 				this.emitState(roomid + '/' + name, "publishing");
 
-				var sdp = new SDP('');
-				sdp.fromJingle($(jingle));
+				// let sdp = new SDP('');
+				// sdp.fromJingle($(jingle));
 
 				this.sessionList[sid] = { roomid, name, earlyCandidates:[] } ;
 
-				// var videourl = url.video || url;
-				// var method = this.srvurl + "/api/call?peerid="+ sid +"&url="+encodeURIComponent(videourl);
-				// if (url.audio) {
-				// 	method += "&audio="+encodeURIComponent(url.audio);
-				// }
-				// method += "&options="+encodeURIComponent("rtptransport=tcp&timeout=60");
-				// fetch(method, { method: "POST", body: JSON.stringify({type:"offer",sdp:sdp.raw}) })
-				// 	.then( (response) =>
-				// 	{
-                //
-				// 		response.json()
-				// 	}
-				// ).then( (response) => {
-                 //    console.log("API/CALL:"+JSON.stringify(response)) //API/CALL:undefined
-					// this.onCall(connection, roomid, name, iq, response )
-				// }).catch( (error) =>
-				// 	{
-				// 		this.onError("call " + error )
-				// 	}
-				// )
-
-
-				var response={
+				let response={
                     "sdp" :JSON.parse(localStorage['srsanswer']).sdp,
 					"type" : "answer"
 				}
@@ -338,16 +318,17 @@ var XMPPVideoRoom = (function() {
 			}
 
 		} else if (action === "transport-info") {
+			console.log(("#############transport-info"))
 			connection.sendIQ(ack);
 
 			console.log("<=== xmpp candidate sid:" + sid);
 
 			if (this.sessionList[sid]) {
-				var contents = $(jingle).find('>content');
+				let contents = $(jingle).find('>content');
 				contents.each( (contentIdx,content) => {
-					var transports = $(content).find('>transport');
+					let transports = $(content).find('>transport');
 					transports.each( (idx,transport) => {
-						var ufrag = transport.getAttribute('ufrag');
+						let ufrag = transport.getAttribute('ufrag');
 
 
 						// //add by sbin
@@ -356,12 +337,15 @@ var XMPPVideoRoom = (function() {
 						// console.log('changed ufag='+ ufrag);
 
 
-						var candidates = $(transport).find('>candidate');
+						let candidates = $(transport).find('>candidate');
 						candidates.each ( (idx,candidate) => {
-							var sdp = SDPUtil.candidateFromJingle(candidate);
+							let sdp = SDPUtil.candidateFromJingle(candidate);
+
 							sdp = sdp.replace("a=candidate","candidate");
 							sdp = sdp.replace("\r\n"," ufrag " + ufrag);
-							var candidate = { candidate:sdp, sdpMid:"", sdpMLineIndex:contentIdx }
+
+
+							candidate = { candidate:sdp, sdpMid:"", sdpMLineIndex:contentIdx }
 
 							if (this.sessionList[sid].earlyCandidates) {
 								console.log("queue candidate waiting for call answer");

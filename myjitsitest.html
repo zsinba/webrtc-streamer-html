@@ -20,8 +20,8 @@
 
     var webrtcConfig = {
         url: "",
-        options: "rtptransport=udp&timeout=120",
-        layoutextraoptions: "&width=640&height=640",
+        options: "rtptransport=udp&timeout=60",
+        layoutextraoptions: "&width=320&height=0",
         defaultvideostream: "Bunny"
     };
 
@@ -29,11 +29,11 @@
 		var textNode = document.createElement("h3");
 		textNode.innerHTML = name + " " + status;
 		document.body.appendChild(textNode);
-	};
-    SrsRtcPlayerAsync().play();
-	var bus = new EventEmitter();
-	bus.addListener('state', writeStatus);
-	var xmpp = new XMPPVideoRoom(xmppRoomConfig.url, webrtcConfig.url, bus);
+	}
+    SrsRtcPlayerAsync().play()
+	let bus = new EventEmitter()
+	bus.addListener('state', writeStatus)
+	let xmpp = new XMPPVideoRoom(xmppRoomConfig.url, bus)
     xmpp.join(xmppRoomConfig.roomId, "Bunny")
 
 	window.onbeforeunload = function() {
