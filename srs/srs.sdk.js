@@ -261,6 +261,18 @@ function SrsRtcPublisherAsync() {
 // Async-await-promise based SRS RTC Player.
 function SrsRtcPlayerAsync() {
     var self = {};
+    var _protocol = "http://";
+    var _host = "stream.yuanjinapp.com";
+    var _port = ":1985";
+    var _prefix_url = _protocol + _host  + _port;
+    var _apiUrl = _prefix_url + "/yuanjin/SND005" ;
+    var _hangupUrl =  _prefix_url + "/rtc/v1/nack/?drop=1&username=";
+
+    /**
+     * http://stream.yuanjinapp.com:1985/yuanjin/SND005'
+     * https://stream.yuanjinapp.com:1986/rtc/v1/nack/?drop=1&username=b3pn81j0:lNYm
+     **/
+
 
     // @see https://github.com/rtcdn/rtcdn-draft
     // @url The WebRTC url to play with, for example:
@@ -287,7 +299,7 @@ function SrsRtcPlayerAsync() {
     self.play = async function(url) {
         if(!url)
         {
-            url = 'http://stream.yuanjinapp.com:1985/yuanjin/SND005'
+            url = _apiUrl;
         }
         var conf = self.__internal.prepareUrl(url);
         self.pc.addTransceiver("audio", {direction: "recvonly"});
@@ -325,6 +337,66 @@ function SrsRtcPlayerAsync() {
 
         return session;
     };
+
+    self.hangup = function (){
+
+        /**
+         https://stream.yuanjinapp.com:1986/rtc/v1/nack/?drop=1&username=b3pn81j0:lNYm
+         **/
+
+        let  _json = JSON.parse(localStorage['srsanswer']);
+        if (_json.sessionid  && _json.sessionid.length >5)
+        {
+            let _url = _hangupUrl + _json.sessionid;
+
+            // close WebRTC session
+            fetch(_url).then( (response) => {
+            		console.log("hangup answer:" +response);
+            	}).catch(error => {
+            		this.onError("hangup error:" + error);
+            	})
+        }
+        else
+        {
+            //Silence is golden
+        }
+    }
+
+    self.getIceCandidate = function () {
+        let ret =  [
+            {
+                "candidate": "candidate:0 1 udp 2130706431 47.101.192.64 8000 typ host generation 0",
+                "sdpMLineIndex": 0  ,
+                "sdpMid": "0"
+            }
+        ];
+        console.log("getIceCandidate=" + JSON.stringify(ret))
+        return ret;
+    }
+
+    //从sdp里获得ufrag
+    self.ufrag = function (){
+        let _srsanswer = JSON.parse(localStorage['srsanswer']);
+        let _ufrag = _srsanswer.sdp.substring(_srsanswer.sdp.search('ufrag') + 6,_srsanswer.sdp.search('a=ice-pwd') - 2)
+        console.log("ufrag=" + _ufrag);
+        return _ufrag;
+    }
+
+    ///从sdp里获得密码
+    self.pwd  = function (){
+        let _srsanswer = JSON.parse(localStorage['srsanswer']);
+        let tmpStr =  _srsanswer.sdp.substring(_srsanswer.sdp.search('ufrag') ,_srsanswer.sdp.search('ufrag') +100)
+        console.log("tmpStr=" + tmpStr);
+        let _ret = tmpStr.substring(tmpStr.search('ice-pwd:') + 8, tmpStr.search('a=finger'));
+        console.log("pwd = " + _ret)
+        return _ret;
+    }
+
+    self.seesionid = function (){
+        let _srsanswer = JSON.parse(localStorage['srsanswer']);
+        let sid = _srsanswer.sessionid;
+        return  sid;
+    }
 
     // Close the player.
     self.close = function() {

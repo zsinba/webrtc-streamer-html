@@ -1,4 +1,4 @@
-<html>
+<html lang="en">
 <head>
 <script src="libs/strophe.min.js" ></script>
 <script src="libs/strophe.muc.min.js" ></script>
@@ -8,23 +8,35 @@
 <script src="libs/EventEmitter.min.js" ></script>
     <script src="srs/srs.sdk.js"></script>
 <script src="myxmppvideoroom.js" ></script>
-<script src="xmppvideoroom.json" ></script>
-<script src="webrtcstreamer.json" ></script>
+    <title>Test Webrtc</title>
 </head>
 <body></body>
-<script>   
-	function writeStatus(name, status) {
+<script>
+
+    var xmppRoomConfig = {
+        url: "m.yuanjinapp.com",
+        roomId: "testroom"
+    };
+
+    var webrtcConfig = {
+        url: "",
+        options: "rtptransport=udp&timeout=120",
+        layoutextraoptions: "&width=640&height=640",
+        defaultvideostream: "Bunny"
+    };
+
+    function writeStatus(name, status) {
 		var textNode = document.createElement("h3");
 		textNode.innerHTML = name + " " + status;
 		document.body.appendChild(textNode);
-	}
+	};
     SrsRtcPlayerAsync().play();
 	var bus = new EventEmitter();
 	bus.addListener('state', writeStatus);
 	var xmpp = new XMPPVideoRoom(xmppRoomConfig.url, webrtcConfig.url, bus);
-	xmpp.join(xmppRoomConfig.roomId, "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov","Bunny");
-	
-	window.onbeforeunload = function() { 
+    xmpp.join(xmppRoomConfig.roomId, "Bunny")
+
+	window.onbeforeunload = function() {
 			xmpp.leave();
 	};
 </script>
