@@ -68,7 +68,7 @@ var XMPPVideoRoom = (function() {
 			connection.addHandler(this.OnJingle.bind(this, connection, roomId, username), 'urn:xmpp:jingle:1', 'iq', 'set', null, null);
 
 
-			let roomUrl = this.getRoomUrl(roomId);
+			var roomUrl = this.getRoomUrl(roomId);
 
 			this.emitState(roomId + '/' + username, "joining");
 
@@ -236,7 +236,7 @@ var XMPPVideoRoom = (function() {
 		// 	.then( (response) => this.onReceiveCandidate(connection, roomid, name, answer.node, response) )
 		// 	.catch( error =>  this.onError("getIceCandidate error:" + error) )
 
-		let response = SrsRtcPlayerAsync().getIceCandidate();
+		var response = SrsRtcPlayerAsync().getIceCandidate();
 		// var response =
         //     [
         //         {
@@ -278,20 +278,20 @@ var XMPPVideoRoom = (function() {
 	/* XMPP callback for  jingle
 	*/
 	XMPPVideoRoom.prototype.OnJingle = function(connection, roomid, name, iq) {
-		let jingle = iq.querySelector("jingle");
-		let sid = jingle.getAttribute("sid");
+		var jingle = iq.querySelector("jingle");
+		var sid = jingle.getAttribute("sid");
 
 
 
-		let action = jingle.getAttribute("action");
+		var action = jingle.getAttribute("action");
 		console.log("##########action=" + action);
 		const fromJid = iq.getAttribute('from');
 		const toJid = iq.getAttribute('to');
 		console.log("OnJingle from:" + fromJid + " to:" + toJid + " sid:" + sid + " action:" + action)
 		//console.log(iq.innerHTML);
 
-		let id = iq.getAttribute("id");
-		let ack = $iq({ type: "result", to: fromJid, id })
+		var id = iq.getAttribute("id");
+		var ack = $iq({ type: "result", to: fromJid, id })
 
 		if (action === "session-initiate") 	{
 			connection.sendIQ(ack);
@@ -304,12 +304,12 @@ var XMPPVideoRoom = (function() {
 				console.log("############!isP2p")
 				this.emitState(roomid + '/' + name, "publishing");
 
-				// let sdp = new SDP('');
+				// var sdp = new SDP('');
 				// sdp.fromJingle($(jingle));
 
 				this.sessionList[sid] = { roomid, name, earlyCandidates:[] } ;
 
-				let response={
+				var response={
                     "sdp" :JSON.parse(localStorage['srsanswer']).sdp,
 					"type" : "answer"
 				}
@@ -324,11 +324,11 @@ var XMPPVideoRoom = (function() {
 			console.log("<=== xmpp candidate sid:" + sid);
 
 			if (this.sessionList[sid]) {
-				let contents = $(jingle).find('>content');
+				var contents = $(jingle).find('>content');
 				contents.each( (contentIdx,content) => {
-					let transports = $(content).find('>transport');
+					var transports = $(content).find('>transport');
 					transports.each( (idx,transport) => {
-						let ufrag = transport.getAttribute('ufrag');
+						var ufrag = transport.getAttribute('ufrag');
 
 
 						// //add by sbin
@@ -337,9 +337,9 @@ var XMPPVideoRoom = (function() {
 						// console.log('changed ufag='+ ufrag);
 
 
-						let candidates = $(transport).find('>candidate');
+						var candidates = $(transport).find('>candidate');
 						candidates.each ( (idx,candidate) => {
-							let sdp = SDPUtil.candidateFromJingle(candidate);
+							var sdp = SDPUtil.candidateFromJingle(candidate);
 
 							sdp = sdp.replace("a=candidate","candidate");
 							sdp = sdp.replace("\r\n"," ufrag " + ufrag);
